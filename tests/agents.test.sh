@@ -5,23 +5,8 @@
 REG="$(mktemp -d)"
 export PI_HATCH_DIR="$REG"
 start_server
-SOCKPATH="/tmp/tmux-$(id -u)/$SOCK"
 now=$(date +%s)
 
-# newpane <session> <window-name>: a pane running a long sleep; echoes "pane_id pid"
-newpane() {
-  if T has-session -t "$1" 2>/dev/null; then
-    T new-window -d -t "$1" -n "$2" -P -F '#{pane_id} #{pane_pid}' "exec sleep 600"
-  else
-    T new-session -d -s "$1" -n "$2" -x 200 -y 50 -P -F '#{pane_id} #{pane_pid}' "exec sleep 600"
-  fi
-}
-pstart() { local s; s="$(cat /proc/$1/stat)"; s="${s##*) }"; set -- $s; echo "${20}"; }
-# rec <file> <pid> <procStart> <pane> <socket> <status> <updatedAt> [cwd]
-rec() {
-  jq -n --argjson pid "$2" --arg ps "$3" --arg pane "$4" --arg sock "$5" --arg st "$6" --argjson ts "$7" --arg cwd "${8:-/work/p}" \
-    '{pid:$pid,procStart:$ps,paneId:$pane,socket:$sock,cwd:$cwd,status:$st,updatedAt:$ts}' >"$REG/$1.json"
-}
 agents() { TMUX="$SOCKPATH,0,0" "$ROOT/scripts/agents.sh"; }
 col() { agents | cut -f"$1"; }
 
