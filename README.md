@@ -5,7 +5,7 @@ hand it work, close the popup, and carry on. Closing never stops Pi. A picker li
 every Pi running on your tmux server, shows which one needs you, and jumps to it. A bell
 tells you when a Pi finishes or blocks on a prompt.
 
-Modelled on [tmux-claude-hatch](https://github.com/craftzdog/tmux-claude-hatch), but Pi-only.
+Inspired by [tmux-claude-hatch](https://github.com/craftzdog/tmux-claude-hatch), but Pi-only.
 A few shell scripts plus one small Pi extension.
 
 ## How it works
@@ -13,7 +13,7 @@ A few shell scripts plus one small Pi extension.
 - `prefix` + `y` opens (or re-attaches to) a Pi for the current pane's folder in a popup. Each
   exact folder path gets its own tmux session (`pi-<hash>`), so every git worktree gets its own Pi.
 - Press `prefix` + `y` again inside the popup (or `prefix` + `d`) to close it. Pi keeps running.
-- `prefix` + `u` opens the picker: every live Pi on this tmux server, with status, age,
+- `prefix` + `u` opens the picker (fzf-lua style: list on the left, live preview on the right, below it on a narrow screen): every live Pi on this tmux server, with status, age,
   location, project path and a live preview. Enter on a hatch-launched Pi reopens its popup;
   Enter on a Pi you started by hand focuses its pane.
 - A **Pi extension** (below) reports each Pi's status. Without it the picker is empty.
@@ -40,7 +40,7 @@ Only the current tmux server is covered; other tmux sockets are not listed.
 With [tpm](https://github.com/tmux-plugins/tpm), in `tmux.conf`, then `prefix` + `I`:
 
 ```tmux
-set -g @plugin '<you>/tmux-pi-hatch'
+set -g @plugin 'William9923/tmux-pi-hatch'
 ```
 
 Or clone it and load it by hand. Put this **after** any bindings of your own for `y`/`u`:
@@ -88,8 +88,8 @@ Set before the plugin loads (defaults shown):
 set -g @pi_hatch_launch_key   'y'    # prefix key: open/toggle the popup
 set -g @pi_hatch_list_key     'u'    # prefix key: open the picker
 set -g @pi_hatch_command      'pi'   # run in new sessions, e.g. 'fish -lic pi' or 'pi --model x'
-set -g @pi_hatch_popup_width  '90%'
-set -g @pi_hatch_popup_height '90%'
+set -g @pi_hatch_popup_width  '95%'
+set -g @pi_hatch_popup_height '95%'
 set -g @pi_hatch_fzf_options  ''     # extra fzf options for the picker
 set -g @pi_hatch_forward_bell 'on'   # highlight the launch window on a bell
 ```

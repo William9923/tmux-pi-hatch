@@ -5,8 +5,8 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=helpers.sh
 . "$DIR/helpers.sh"
 
-w="$(get_tmux_option @pi_hatch_popup_width '90%')"
-h="$(get_tmux_option @pi_hatch_popup_height '90%')"
+w="$(get_tmux_option @pi_hatch_popup_width '95%')"
+h="$(get_tmux_option @pi_hatch_popup_height '95%')"
 
 # The session the pressing client is attached to, by exact client_name match (a
 # global scan could grab an unrelated client when several are attached).

@@ -20,8 +20,8 @@ pi-*)
 esac
 
 cmd="$(get_tmux_option @pi_hatch_command 'pi')"
-w="$(get_tmux_option @pi_hatch_popup_width '90%')"
-h="$(get_tmux_option @pi_hatch_popup_height '90%')"
+w="$(get_tmux_option @pi_hatch_popup_width '95%')"
+h="$(get_tmux_option @pi_hatch_popup_height '95%')"
 session="pi-$(session_hash "$path")"
 
 if ! tmux has-session -t "$session" 2>/dev/null; then

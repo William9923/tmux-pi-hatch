@@ -25,6 +25,16 @@ ok "preview of the first row (prompt, red) is live" wait_for has "MARK-B"
 order="$(screen | grep -oE 'prompt|ready|working' | paste -sd' ')"
 ok "rows: prompt, ready, working" test "$order" = "prompt ready working"
 ok "rows show path and location" bash -c 'screen=$(tmux -L "$0" -f /dev/null capture-pane -p -t "$1"); echo "$screen" | grep -q "/work/b" && echo "$screen" | grep -qE "target:[0-9]+\.[0-9]+"' "$SOCK" "$picker"
+# layout: wide pane -> preview right of the list (fzf-lua style); narrow -> below the rows
+ok "wide: preview is on the right" test "$(screen | awk '{ i = index($0, "MARK-B"); if (i > m) m = i } END { print m + 0 }')" -gt 60
+T new-session -d -s narrow -x 80 -y 30 "env PI_HATCH_DIR=$REG $ROOT/scripts/picker.sh"
+narrow() { T capture-pane -p -t narrow; }
+narrow_has() { narrow | grep -q MARK-B; }
+wait_for narrow_has
+line_of() { narrow | grep -n -- "$1" | head -1 | cut -d: -f1; }
+ok "narrow: preview flips below the rows" test "$(line_of MARK-B)" -gt "$(line_of working)"
+T kill-session -t narrow
+
 T send-keys -t "$picker" Down
 ok "preview follows the selection" wait_for has "MARK-A"
 T send-keys -t "$picker" Up
