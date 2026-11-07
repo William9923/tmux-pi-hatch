@@ -5,6 +5,7 @@
 // process. It never records prompts or transcript text, and any failure is
 // swallowed so Pi and the conversation are never affected.
 
+import { execFileSync } from "node:child_process"
 import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent"
@@ -51,6 +52,23 @@ export default function (pi: ExtensionAPI) {
     status = next
     publish()
   }
+  // A real BEL on the pane's pty, which tmux turns into a bell alert. /dev/tty is the
+  // pane itself; if Pi has no controlling terminal, ask tmux for the pane's tty.
+  // PI_HATCH_TTY overrides /dev/tty (tests).
+  function ring() {
+    if (!enabled) return
+    try {
+      writeFileSync(process.env.PI_HATCH_TTY || "/dev/tty", "\x07", { flag: "a" })
+    } catch {
+      try {
+        const tty = execFileSync("tmux", ["display-message", "-p", "-t", pane!, "#{pane_tty}"], {
+          encoding: "utf8",
+          timeout: 1000,
+        }).trim()
+        if (tty) writeFileSync(tty, "\x07", { flag: "a" })
+      } catch {} // a missed bell must never break Pi
+    }
+  }
   // Every handler is wrapped so a registry failure can never break Pi.
   const on = (event: string, fn: (e: any, ctx: any) => void) =>
     (pi as any).on(event, async (e: any, ctx: any) => {
@@ -64,8 +82,14 @@ export default function (pi: ExtensionAPI) {
     set("ready", ctx)
   })
   on("agent_start", (_e, ctx) => set("working", ctx))
-  on("agent_settled", (e, ctx) => set(e.aborted ? "aborted" : "ready", ctx))
-  on("ui_prompt_start", (_e, ctx) => set("prompt", ctx))
+  on("agent_settled", (e, ctx) => {
+    set(e.aborted ? "aborted" : "ready", ctx)
+    ring()
+  })
+  on("ui_prompt_start", (_e, ctx) => {
+    set("prompt", ctx)
+    ring()
+  })
   on("ui_prompt_end", (_e, ctx) => set(ctx.isIdle() ? "ready" : "working", ctx))
   on("session_shutdown", () => {
     enabled = false

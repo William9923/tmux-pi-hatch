@@ -2,7 +2,7 @@
 // Run: node --experimental-strip-types --test tests/extension.test.mjs
 import { test, beforeEach } from "node:test"
 import assert from "node:assert/strict"
-import { mkdtempSync, readdirSync, readFileSync, chmodSync, existsSync } from "node:fs"
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, chmodSync, existsSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import ext from "../extension/pi-hatch.ts"
@@ -13,7 +13,12 @@ beforeEach(() => {
   process.env.PI_HATCH_DIR = dir
   process.env.TMUX_PANE = "%7"
   process.env.TMUX = "/tmp/tmux-1000/default,123,0"
+  tty = join(mkdtempSync(join(tmpdir(), "pihatch-tty-")), "tty.out") // stands in for /dev/tty; outside the registry dir
+  writeFileSync(tty, "")
+  process.env.PI_HATCH_TTY = tty
 })
+let tty
+const bells = () => readFileSync(tty, "utf8")
 
 // Load the extension against a fake Pi; returns fire(event, payload, ctxOverrides).
 function load() {
@@ -114,4 +119,62 @@ test("no temp files are left behind", async () => {
   await p.fire("session_start")
   await p.fire("agent_start")
   assert.deepEqual(readdirSync(dir), [`${process.pid}.json`])
+})
+
+test("BEL once on ui_prompt_start and once on agent_settled, nowhere else", async () => {
+  const p = load()
+  await p.fire("session_start")
+  await p.fire("agent_start")
+  assert.equal(bells(), "")
+  await p.fire("ui_prompt_start")
+  assert.equal(bells(), "\x07")
+  await p.fire("ui_prompt_end")
+  assert.equal(bells(), "\x07")
+  await p.fire("agent_settled", { aborted: false })
+  assert.equal(bells(), "\x07\x07")
+  await p.fire("agent_settled", { aborted: true }) // an interrupted run also hands control back
+  assert.equal(bells(), "\x07\x07\x07")
+})
+
+test("no bell when not tracked (no UI)", async () => {
+  const p = load()
+  await p.fire("session_start", {}, { hasUI: false })
+  await p.fire("agent_settled", {}, { hasUI: false })
+  assert.equal(bells(), "")
+})
+
+test("falls back to the pane tty from tmux when /dev/tty is unusable", async () => {
+  const other = mkdtempSync(join(tmpdir(), "pihatch-bin-"))
+  const bin = join(other, "bin")
+  const target = join(other, "pane-tty")
+  mkdirSync(bin)
+  writeFileSync(target, "")
+  writeFileSync(join(bin, "tmux"), `#!/bin/sh\necho ${target}\n`, { mode: 0o755 })
+  const oldPath = process.env.PATH
+  process.env.PATH = `${bin}:${oldPath}`
+  process.env.PI_HATCH_TTY = join(dir, "no-such-dir", "tty") // primary write fails
+  try {
+    const p = load()
+    await p.fire("session_start")
+    await p.fire("agent_settled", { aborted: false })
+    assert.equal(readFileSync(target, "utf8"), "\x07")
+  } finally {
+    process.env.PATH = oldPath
+  }
+})
+
+test("a failing bell does not throw or change the registry status", async () => {
+  process.env.PI_HATCH_TTY = join(dir, "no-such-dir", "tty")
+  const oldPath = process.env.PATH
+  process.env.PATH = join(dir, "empty") // no tmux for the fallback either
+  try {
+    const p = load()
+    await p.fire("session_start")
+    await p.fire("ui_prompt_start")
+    assert.equal(rec().status, "prompt")
+    await p.fire("agent_settled", { aborted: false })
+    assert.equal(rec().status, "ready")
+  } finally {
+    process.env.PATH = oldPath
+  }
 })
