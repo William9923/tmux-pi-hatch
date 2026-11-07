@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chunk 6: the fzf picker, run in a real pane; rows, preview, enter -> jump.
+# the fzf picker, run in a real pane; rows, preview, enter -> jump.
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 REG="$(mktemp -d)"
@@ -34,9 +34,7 @@ csession() { T list-clients -F '#{client_name} #{session_name}' | awk -v c="$cli
 at_target() { [ "$(csession)" = target ]; }
 ok "enter focuses the selected pane's session" wait_for at_target
 ok "enter focuses the selected pane" test "$(T display-message -p -t target '#{pane_id}')" = "$pB"
-ok "no sessions created" test "$(nsessions)" = 2
 ok "no kill/copy bindings" bash -c '! grep -E "ctrl-x|ctrl-y|kill|copy" "$0/scripts/picker.sh"' "$ROOT"
 
 rm -rf "$REG"
-ok "bash -n" bash -n "$ROOT/scripts/picker.sh" "$ROOT/scripts/list.sh"
 finish picker

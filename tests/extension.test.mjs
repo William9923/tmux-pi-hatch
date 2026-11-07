@@ -1,4 +1,4 @@
-// Chunk 3: registry + status mapping, against a mocked Pi API.
+// Registry, status mapping and bell, against a mocked Pi API.
 // Run: node --experimental-strip-types --test tests/extension.test.mjs
 import { test, beforeEach } from "node:test"
 import assert from "node:assert/strict"

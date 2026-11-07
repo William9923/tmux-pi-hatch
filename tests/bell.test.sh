@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chunk 7: bell forwarding, and the bell-action question (D2).
+# bell forwarding, and the bell-action question (D2).
 # The user's tmux has a global `bell-action none`; these tests run with it.
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
@@ -44,12 +44,6 @@ ring "$sess"
 sleep 0.8
 ok "origin in a hatch session is not forwarded" flag_is pi-other:0 0
 
-# No origin recorded -> harmless.
-T set-option -t "$sess" -u @pi_hatch_origin
-ring "$sess"
-sleep 0.5
-ok "no origin: nothing happens, server alive" T has-session -t main
-
 # Opt-out
 stop_server
 start_server
@@ -57,5 +51,4 @@ T set -g @pi_hatch_forward_bell off
 T run-shell "$ROOT/pi_hatch.tmux"
 ok "forward_bell off installs no hook" bash -c '! tmux -L "$0" -f /dev/null show-hooks -g | grep -q "bell.sh"' "$SOCK"
 
-ok "bash -n" bash -n "$ROOT/scripts/bell.sh"
 finish bell

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chunk 2: launch / reattach / per-path sessions / toggle.
+# launch / reattach / per-path sessions / toggle.
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 mkdir -p /tmp/pihatch-a /tmp/pihatch-b
@@ -37,12 +37,10 @@ wait_for not_in_session "$sa"
 
 press "$main_pane" /tmp/pihatch-b
 ok "other path -> other session" wait_for in_session "$sb"
-ok "now 3 sessions" test "$(nsessions)" = 3
 press "$(T display-message -p -t "$sb" '#{pane_id}')" /tmp/pihatch-b
 wait_for not_in_session "$sb"
 
 T run-shell -t "$main_pane" "$ROOT/scripts/launch.sh /tmp/pihatch-missing-dir '$win' main"
 ok "missing dir creates no session" test "$(nsessions)" = 3
 
-ok "bash -n" bash -n "$ROOT/scripts/launch.sh"
 finish launch

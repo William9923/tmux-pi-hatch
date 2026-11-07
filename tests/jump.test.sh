@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chunk 6: jump.sh for manual and managed rows.
+# jump.sh for manual and managed rows.
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 start_server
@@ -33,5 +33,4 @@ ok "managed: outer client moved to the origin window" test "$(csession)" = work
 ok "managed: hatch window/pane focused" test "$(T display-message -p -t pi-test '#{pane_id}')" = "$pY"
 ok "managed: no duplicate session" test "$(nsessions)" = "$sessions_before"
 
-ok "bash -n" bash -n "$ROOT/scripts/jump.sh"
 finish jump

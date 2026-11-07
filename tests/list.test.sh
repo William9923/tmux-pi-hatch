@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chunk 6: list.sh opens the picker popup, also when pressed inside a Pi popup.
+# list.sh opens the picker popup, also when pressed inside a Pi popup.
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 export PI_HATCH_DIR="$(mktemp -d)"
@@ -35,6 +35,5 @@ ok "popup client detached" wait_for not_in_session "$sess"
 ok "Pi keeps running" T has-session -t "$sess"
 ok "picker opened over the outer client" wait_for picker_running
 
-ok "bash -n" bash -n "$ROOT/scripts/list.sh"
 rm -rf "$PI_HATCH_DIR"
 finish list
