@@ -18,3 +18,9 @@ tmux bind-key "$launch_key" \
 # Open the picker.
 tmux bind-key "$list_key" \
   run-shell "$CURRENT_DIR/scripts/list.sh '#{q:client_name}'"
+
+# Forward a bell from a hatch session to its origin window's pane.
+if [ "$(get_tmux_option @pi_hatch_forward_bell 'on')" = 'on' ]; then
+  tmux set-hook -g alert-bell \
+    "run-shell -b \"$CURRENT_DIR/scripts/bell.sh '#{q:hook_session_name}'\""
+fi

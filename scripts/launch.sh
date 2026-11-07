@@ -35,6 +35,10 @@ fi
 # Close the popup when Pi exits, even under a global detach-on-destroy off.
 tmux set-option -t "$session" detach-on-destroy on
 
+# The hatch window is always its session's current window, so only `any` makes tmux
+# fire alert-bell for it (`other` never does), whatever the global bell-action is.
+tmux set-option -t "$session" bell-action any
+
 # Remember the launching window, so the picker and bell forwarding can find it.
 [ -n "$window" ] && tmux set-option -t "$session" @pi_hatch_origin "$window"
 
