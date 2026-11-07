@@ -13,7 +13,7 @@ list_key="$(get_tmux_option @pi_hatch_list_key 'u')"
 # #{pane_current_path} / #{window_id} are expanded by run-shell before the args
 # reach the script.
 tmux bind-key "$launch_key" \
-  run-shell "$CURRENT_DIR/scripts/launch.sh '#{q:pane_current_path}' '#{q:window_id}'"
+  run-shell "$CURRENT_DIR/scripts/launch.sh '#{q:pane_current_path}' '#{q:window_id}' '#{q:session_name}'"
 
 # Open the picker.
 tmux bind-key "$list_key" \
