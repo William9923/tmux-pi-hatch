@@ -22,7 +22,8 @@ has() { screen | grep -q -- "$1"; }
 
 ok "picker shows header" wait_for has "enter: jump"
 ok "preview of the first row (prompt, red) is live" wait_for has "MARK-B"
-order="$(screen | grep -oE 'prompt|ready|working' | paste -sd' ')"
+rows() { screen | grep '●' | grep -oE 'prompt|ready|working' | paste -sd' '; }
+order="$(rows)"
 ok "rows: prompt, ready, working" test "$order" = "prompt ready working"
 ok "rows show path and location" bash -c 'screen=$(tmux -L "$0" -f /dev/null capture-pane -p -t "$1"); echo "$screen" | grep -q "/work/b" && echo "$screen" | grep -qE "target:[0-9]+\.[0-9]+"' "$SOCK" "$picker"
 # layout: wide pane -> preview right of the list (fzf-lua style); narrow -> below the rows
@@ -34,6 +35,16 @@ wait_for narrow_has
 line_of() { narrow | grep -n -- "$1" | head -1 | cut -d: -f1; }
 ok "narrow: preview flips below the rows" test "$(line_of MARK-B)" -gt "$(line_of working)"
 T kill-session -t narrow
+
+is_working() { test "$(rows)" = working; }
+is_ready() { test "$(rows)" = ready; }
+is_all() { test "$(rows)" = "prompt ready working"; }
+T send-keys -t "$picker" Tab
+ok "Tab filters working agents" wait_for is_working
+T send-keys -t "$picker" Tab
+ok "Tab cycles to ready agents" wait_for is_ready
+T send-keys -t "$picker" Tab
+ok "Tab cycles back to all agents" wait_for is_all
 
 T send-keys -t "$picker" Down
 ok "preview follows the selection" wait_for has "MARK-A"

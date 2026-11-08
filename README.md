@@ -76,7 +76,7 @@ settles. Any failure in it is swallowed; it cannot break Pi.
 | `prefix` + `y` | open / re-attach the popup for this folder; inside the popup, close it |
 | `prefix` + `d` | close the popup (tmux's usual detach) |
 | `prefix` + `u` | open the picker (from inside a popup it closes the popup first) |
-| picker: `enter` | jump to the Pi; `↑`/`↓`, type to filter, `esc` to close |
+| picker: `enter` | jump to the Pi; `↑`/`↓`, type to filter; `Tab` cycles all → working → ready → all; `esc` to close |
 
 There is deliberately no kill key: `ready` can mean "done" or "waiting for your reply".
 

@@ -37,10 +37,11 @@ fzf_options="$(get_tmux_option @pi_hatch_fzf_options '')"
 
 # Row: pane_id \t pid \t kind \t status \t age \t loc \t path; the first three are hidden.
 sel=$("$DIR/agents.sh" | fzf --ansi --delimiter='\t' --with-nth=4,5,6,7 \
-  --layout=reverse --info=inline-right --highlight-line --cycle --header='Pi agents · enter: jump' \
+  --layout=reverse --info=inline-right --highlight-line --cycle --header='Pi agents · Tab: cycle status · enter: jump' \
   --preview="$self --preview {1}" \
   --preview-window='right:60%,border-rounded,<100(down:45%,border-rounded),follow' \
   --bind='change:first' \
+  --bind='tab:transform-query([ "$FZF_QUERY" = working ] && echo ready || [ "$FZF_QUERY" = ready ] || echo working)' \
   ${extra_opts[@]+"${extra_opts[@]}"})
 
 [ -z "$sel" ] && exit 0
